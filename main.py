@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, matthews_corrcoef
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.neighbors import KNeighborsClassifier
 
-
-data_1 = pd.read_csv('subsets/subset_1_df.csv')
+data_1 = pd.read_csv('subsets/subset_5_df.csv')
 X = data_1.drop('Etiqueta', axis=1).values
 y = data_1['Etiqueta'].values
 skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
@@ -40,9 +40,26 @@ for metric in metrics:
 
 # from sklearn.neighbors import KNeighborsClassifier
 
-# # Puedes ajustar el parámetro k en el rango [1, 16] con pasos impares
-# for k in range(1, 16, 2):
-#     knn_classifier = KNeighborsClassifier(n_neighbors=k, metric='euclidean')  # o 'manhattan'
-#     knn_classifier.fit(X_train, y_train)
-#     accuracy_knn = knn_classifier.score(X_test, y_test)
-#     # Realiza la evaluación y optimización según sea necesario
+# Puedes ajustar el parámetro k en el rango [1, 16] con pasos impares
+for k in range(1, 16, 2):
+    knn_classifier = KNeighborsClassifier(n_neighbors=k, metric='euclidean')  # o 'manhattan'
+    knn_classifier.fit(X_train, y_train)
+    y_pred_knn = knn_classifier.predict(X_test)
+    # Calcula y almacena las métricas para k-NN
+    results_knn['accuracy'].append(accuracy_score(y_test, y_pred_knn))
+    results_knn['precision'].append(precision_score(y_test, y_pred_knn))
+    results_knn['recall'].append(recall_score(y_test, y_pred_knn))
+    results_knn['roc_auc'].append(roc_auc_score(y_test, y_pred_knn))
+    results_knn['f1'].append(f1_score(y_test, y_pred_knn))
+    results_knn['mcc'].append(matthews_corrcoef(y_test, y_pred_knn))
+    print(f"K = {k}:")
+    for metric in metrics:
+        print(f"{metric}: {results_knn[metric][-1]}")
+        
+
+avg_results_knn = {metric: (np.mean(results_knn[metric]), np.std(results_knn[metric])) for metric in metrics}
+print("\nResultados para K-NN:")
+for metric in metrics:
+    print(f"{metric}: Mean = {avg_results_knn[metric][0]}, Std = {avg_results_knn[metric][1]}")
+    
+    # Realiza la evaluación y optimización según sea necesario

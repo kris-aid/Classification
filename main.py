@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_a
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 
-data_1 = pd.read_csv('subsets/subset_5_df.csv')
+data_1 = pd.read_csv('subsets/subset_4_df.csv')
 X = data_1.drop('Etiqueta', axis=1).values
 y = data_1['Etiqueta'].values
 skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
@@ -20,7 +20,7 @@ metrics = ['accuracy', 'precision', 'recall', 'roc_auc', 'f1', 'mcc']
 results_knn = {metric: [] for metric in metrics}
 results_nb = {metric: [] for metric in metrics}
 
-nb_classifier = MultinomialNB()
+nb_classifier = MultinomialNB(alpha=0.5)
 nb_classifier.fit(X_train, y_train)
 y_pred_nb = nb_classifier.predict(X_test)
 
@@ -42,7 +42,7 @@ for metric in metrics:
 
 # Puedes ajustar el parámetro k en el rango [1, 16] con pasos impares
 for k in range(1, 16, 2):
-    knn_classifier = KNeighborsClassifier(n_neighbors=k, metric='euclidean')  # o 'manhattan'
+    knn_classifier = KNeighborsClassifier(n_neighbors=k, metric='manhattan')  # o 'manhattan'
     knn_classifier.fit(X_train, y_train)
     y_pred_knn = knn_classifier.predict(X_test)
     # Calcula y almacena las métricas para k-NN
@@ -63,3 +63,16 @@ for metric in metrics:
     print(f"{metric}: Mean = {avg_results_knn[metric][0]}, Std = {avg_results_knn[metric][1]}")
     
     # Realiza la evaluación y optimización según sea necesario
+
+k_values = list(range(1, 16, 2))
+auc_values= results_knn['roc_auc']
+
+def graph_k_AUC(k_values, auc_values, distance):
+    import matplotlib.pyplot as plt
+    plt.plot(k_values, auc_values, 'ro-')
+    plt.title('k-NN: AUC vs k with '+ distance + ' distance')
+    plt.xlabel('k')
+    plt.xticks(k_values)
+    plt.ylabel('AUC')
+    plt.show()
+graph_k_AUC(k_values, auc_values, 'manhattan')

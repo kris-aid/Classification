@@ -120,13 +120,6 @@ def classify(dataset,verbose=False):
             avg_metric = np.mean(results_knn_euclidean[metric])
             std_metric = np.std(results_knn_euclidean[metric])
             print(f"{metric}: Mean = {avg_metric}, Std = {std_metric}")
-
-        # k_values = list(range(1, 16, 2))
-        # auc_values_manhattan= results_knn_manhattan['roc_auc']
-        # auc_values_euclidean= results_knn_euclidean['roc_auc']
-
-        # graph_k_AUC(k_values, auc_values_manhattan, 'manhattan')
-        # graph_k_AUC(k_values, auc_values_euclidean, 'euclidean')
         
     return results_nb, results_knn_manhattan, results_knn_euclidean, best_k
 
@@ -177,8 +170,5 @@ if __name__ == "__main__":
     for i in range(len(all_best_k)):
         print(f"Subset {i+1}: {all_best_k[i]}")
 
-
-    # auc_values_manhattan= mean_auc_values_manhattan['roc_auc']
-    # auc_values_euclidean= mean_auc_values_euclidean['roc_auc']
     graph_k_AUC(k_values, mean_auc_values_manhattan, 'manhattan')
     graph_k_AUC(k_values, mean_auc_values_euclidean, 'euclidean')

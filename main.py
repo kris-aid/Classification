@@ -44,6 +44,8 @@ for metric in metrics:
 # Puedes ajustar el parámetro k en el rango [1, 16] con pasos impares
 for k in range(1, 16, 2):
     for distance in ['manhattan', 'euclidean']:
+        print("\n")
+        print(f"K = {k}, Distancia = {distance}")
         knn_classifier = KNeighborsClassifier(n_neighbors=k, metric=distance)
         knn_classifier.fit(X_train, y_train)
         y_pred_knn = knn_classifier.predict(X_test)
@@ -57,9 +59,14 @@ for k in range(1, 16, 2):
         if distance == 'manhattan':
             for metric in metrics:
                 results_knn_manhattan[metric].append(results_knn[metric])
+                print(f"{metric}: {results_knn_manhattan[metric][-1]}")
+            print("\n")
         elif distance == 'euclidean':
             for metric in metrics:
                 results_knn_euclidean[metric].append(results_knn[metric])
+                print(f"{metric}: {results_knn_euclidean[metric][-1]}")
+            print("\n")
+        print("\n")
         
 
 # Print results for Manhattan distance

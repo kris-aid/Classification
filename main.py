@@ -6,8 +6,10 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
+
 # Métricas a evaluar
 metrics = ['accuracy', 'precision', 'recall', 'roc_auc', 'f1', 'mcc']
+k_values = list(range(1, 16, 2))
 
 def graph_k_AUC(k_values, auc_values, distance):
     plt.plot(k_values, auc_values, 'ro-')
@@ -56,7 +58,7 @@ def classify(dataset,verbose=False):
     best_k = []
 
     # Puedes ajustar el parámetro k en el rango [1, 16] con pasos impares
-    for k in range(1, 16, 2):
+    for k in k_values:
         for distance in ['manhattan', 'euclidean']:
             if verbose:
                 print(f"K = {k}, Distancia = {distance}")
@@ -125,7 +127,7 @@ def classify(dataset,verbose=False):
 
         # graph_k_AUC(k_values, auc_values_manhattan, 'manhattan')
         # graph_k_AUC(k_values, auc_values_euclidean, 'euclidean')
-
+        
     return results_nb, results_knn_manhattan, results_knn_euclidean, best_k
 
 if __name__ == "__main__":
@@ -135,6 +137,10 @@ if __name__ == "__main__":
     total_results_knn_manhattan = {metric: [] for metric in metrics}
     total_results_knn_euclidean = {metric: [] for metric in metrics}
     all_best_k = []
+    mean_auc_values_manhattan = []
+    mean_auc_values_euclidean = []
+
+    counter = 0
     for subset in subsets:
         results_nb, results_knn_manhattan, results_knn_euclidean, results_best_k = classify(subset, False)
         all_best_k.append(results_best_k)
@@ -143,12 +149,18 @@ if __name__ == "__main__":
             total_results_knn_manhattan[metric].extend(results_knn_manhattan[metric])
             total_results_knn_euclidean[metric].extend(results_knn_euclidean[metric])
 
-    
+        if counter == 0:
+            mean_auc_values_manhattan = results_knn_manhattan['roc_auc']
+            mean_auc_values_euclidean = results_knn_euclidean['roc_auc']
+        else:
+            mean_auc_values_manhattan = [((x + y)/2) for x, y in zip(mean_auc_values_manhattan, results_knn_manhattan['roc_auc'])]
+            mean_auc_values_euclidean = [((x + y)/2) for x, y in zip(mean_auc_values_euclidean, results_knn_euclidean['roc_auc'])]
+        counter += 1
 
     mean_results_nb = {metric: np.mean(total_results_nb[metric]) for metric in metrics}
     mean_results_knn_manhattan = {metric: np.mean(total_results_knn_manhattan[metric]) for metric in metrics}
     mean_results_knn_euclidean = {metric: np.mean(total_results_knn_euclidean[metric]) for metric in metrics}
-        
+    
     print("\nMean Results for Naive Bayes:")
     for metric in metrics:
         print(f"{metric}: Mean = {mean_results_nb[metric]}")
@@ -165,8 +177,8 @@ if __name__ == "__main__":
     for i in range(len(all_best_k)):
         print(f"Subset {i+1}: {all_best_k[i]}")
 
-    # k_values = list(range(1, 16, 2))
-    # mean_auc_values_manhattan= mean_results_knn_manhattan['roc_auc']
-    # auc_values_euclidean= mean_results_knn_euclidean['roc_auc']
-    # graph_k_AUC(k_values, mean_auc_values_manhattan, 'manhattan')
-    # graph_k_AUC(k_values, auc_values_euclidean, 'euclidean')
+
+    # auc_values_manhattan= mean_auc_values_manhattan['roc_auc']
+    # auc_values_euclidean= mean_auc_values_euclidean['roc_auc']
+    graph_k_AUC(k_values, mean_auc_values_manhattan, 'manhattan')
+    graph_k_AUC(k_values, mean_auc_values_euclidean, 'euclidean')

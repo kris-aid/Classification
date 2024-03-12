@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, matthews_corrcoef
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
+import matplotlib.pyplot as plt
 
 data_1 = pd.read_csv('subsets/subset_4_df.csv')
 X = data_1.drop('Etiqueta', axis=1).values
@@ -88,7 +89,6 @@ auc_values_manhattan= results_knn_manhattan['roc_auc']
 auc_values_euclidean= results_knn_euclidean['roc_auc']
 
 def graph_k_AUC(k_values, auc_values, distance):
-    import matplotlib.pyplot as plt
     plt.plot(k_values, auc_values, 'ro-')
     plt.title('k-NN: AUC vs k with '+ distance + ' distance')
     plt.xlabel('k')

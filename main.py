@@ -83,15 +83,19 @@ for metric in metrics:
     std_metric = np.std(results_knn_euclidean[metric])
     print(f"{metric}: Mean = {avg_metric}, Std = {std_metric}")
 
-# k_values = list(range(1, 16, 2))
-# auc_values= results_knn['roc_auc']
+k_values = list(range(1, 16, 2))
+auc_values_manhattan= results_knn_manhattan['roc_auc']
+auc_values_euclidean= results_knn_euclidean['roc_auc']
 
-# def graph_k_AUC(k_values, auc_values, distance):
-#     import matplotlib.pyplot as plt
-#     plt.plot(k_values, auc_values, 'ro-')
-#     plt.title('k-NN: AUC vs k with '+ distance + ' distance')
-#     plt.xlabel('k')
-#     plt.xticks(k_values)
-#     plt.ylabel('AUC')
-#     plt.show()
-# graph_k_AUC(k_values, auc_values, 'manhattan')
+def graph_k_AUC(k_values, auc_values, distance):
+    import matplotlib.pyplot as plt
+    plt.plot(k_values, auc_values, 'ro-')
+    plt.title('k-NN: AUC vs k with '+ distance + ' distance')
+    plt.xlabel('k')
+    plt.xticks(k_values)
+    plt.ylabel('AUC')
+    plt.show()
+
+
+graph_k_AUC(k_values, auc_values_manhattan, 'manhattan')
+graph_k_AUC(k_values, auc_values_euclidean, 'euclidean')

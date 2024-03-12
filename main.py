@@ -17,7 +17,8 @@ for train_index, test_index in skf.split(X, y):
 # Métricas a evaluar
 metrics = ['accuracy', 'precision', 'recall', 'roc_auc', 'f1', 'mcc']
 # Diccionarios para almacenar los resultados
-results_knn = {metric: [] for metric in metrics}
+results_knn_manhattan = {metric: [] for metric in metrics}
+results_knn_euclidean = {metric: [] for metric in metrics}
 results_nb = {metric: [] for metric in metrics}
 
 nb_classifier = MultinomialNB(alpha=0.5)
@@ -42,37 +43,48 @@ for metric in metrics:
 
 # Puedes ajustar el parámetro k en el rango [1, 16] con pasos impares
 for k in range(1, 16, 2):
-    knn_classifier = KNeighborsClassifier(n_neighbors=k, metric='manhattan')  # o 'manhattan'
-    knn_classifier.fit(X_train, y_train)
-    y_pred_knn = knn_classifier.predict(X_test)
-    # Calcula y almacena las métricas para k-NN
-    results_knn['accuracy'].append(accuracy_score(y_test, y_pred_knn))
-    results_knn['precision'].append(precision_score(y_test, y_pred_knn))
-    results_knn['recall'].append(recall_score(y_test, y_pred_knn))
-    results_knn['roc_auc'].append(roc_auc_score(y_test, y_pred_knn))
-    results_knn['f1'].append(f1_score(y_test, y_pred_knn))
-    results_knn['mcc'].append(matthews_corrcoef(y_test, y_pred_knn))
-    print(f"K = {k}:")
-    for metric in metrics:
-        print(f"{metric}: {results_knn[metric][-1]}")
+    for distance in ['manhattan', 'euclidean']:
+        knn_classifier = KNeighborsClassifier(n_neighbors=k, metric=distance)
+        knn_classifier.fit(X_train, y_train)
+        y_pred_knn = knn_classifier.predict(X_test)
+        # Calcula y almacena las métricas para k-NN
+        results_knn = {'accuracy': accuracy_score(y_test, y_pred_knn),
+                       'precision': precision_score(y_test, y_pred_knn),
+                       'recall': recall_score(y_test, y_pred_knn),
+                       'roc_auc': roc_auc_score(y_test, y_pred_knn),
+                       'f1': f1_score(y_test, y_pred_knn),
+                       'mcc': matthews_corrcoef(y_test, y_pred_knn)}
+        if distance == 'manhattan':
+            for metric in metrics:
+                results_knn_manhattan[metric].append(results_knn[metric])
+        elif distance == 'euclidean':
+            for metric in metrics:
+                results_knn_euclidean[metric].append(results_knn[metric])
         
 
-avg_results_knn = {metric: (np.mean(results_knn[metric]), np.std(results_knn[metric])) for metric in metrics}
-print("\nResultados para K-NN:")
+# Print results for Manhattan distance
+print("\nResultados para K-NN con distancia Manhattan:")
 for metric in metrics:
-    print(f"{metric}: Mean = {avg_results_knn[metric][0]}, Std = {avg_results_knn[metric][1]}")
-    
-    # Realiza la evaluación y optimización según sea necesario
+    avg_metric = np.mean(results_knn_manhattan[metric])
+    std_metric = np.std(results_knn_manhattan[metric])
+    print(f"{metric}: Mean = {avg_metric}, Std = {std_metric}")
 
-k_values = list(range(1, 16, 2))
-auc_values= results_knn['roc_auc']
+# Print results for Euclidean distance
+print("\nResultados para K-NN con distancia Euclidiana:")
+for metric in metrics:
+    avg_metric = np.mean(results_knn_euclidean[metric])
+    std_metric = np.std(results_knn_euclidean[metric])
+    print(f"{metric}: Mean = {avg_metric}, Std = {std_metric}")
 
-def graph_k_AUC(k_values, auc_values, distance):
-    import matplotlib.pyplot as plt
-    plt.plot(k_values, auc_values, 'ro-')
-    plt.title('k-NN: AUC vs k with '+ distance + ' distance')
-    plt.xlabel('k')
-    plt.xticks(k_values)
-    plt.ylabel('AUC')
-    plt.show()
-graph_k_AUC(k_values, auc_values, 'manhattan')
+# k_values = list(range(1, 16, 2))
+# auc_values= results_knn['roc_auc']
+
+# def graph_k_AUC(k_values, auc_values, distance):
+#     import matplotlib.pyplot as plt
+#     plt.plot(k_values, auc_values, 'ro-')
+#     plt.title('k-NN: AUC vs k with '+ distance + ' distance')
+#     plt.xlabel('k')
+#     plt.xticks(k_values)
+#     plt.ylabel('AUC')
+#     plt.show()
+# graph_k_AUC(k_values, auc_values, 'manhattan')

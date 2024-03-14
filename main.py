@@ -127,7 +127,9 @@ def classify(dataset,verbose=False):
 
 if __name__ == "__main__":
     
-    subsets = ['subsets/subset_1_df.csv', 'subsets/subset_2_df.csv', 'subsets/subset_3_df.csv', 'subsets/subset_4_df.csv', 'subsets/subset_5_df.csv']
+    #subsets = ['subsets/subset_1_df.csv', 'subsets/subset_2_df.csv', 'subsets/subset_3_df.csv', 'subsets/subset_4_df.csv', 'subsets/subset_5_df.csv']
+    #Test with other subsets
+    subsets=['subsets_2/subset_1_df.csv', 'subsets_2/subset_2_df.csv', 'subsets_2/subset_3_df.csv', 'subsets_2/subset_4_df.csv', 'subsets_2/subset_5_df.csv']
     total_results_nb = {metric: [] for metric in metrics}
     total_results_knn_manhattan = {metric: [] for metric in metrics}
     total_results_knn_euclidean = {metric: [] for metric in metrics}
@@ -176,7 +178,7 @@ if __name__ == "__main__":
     for i in range(len(all_best_k)):
         print(f"Subset {i+1}: {all_best_k[i]}")
 
-    #graph_k_AUC(k_values, mean_auc_values_manhattan, 'manhattan')
+    graph_k_AUC(k_values, mean_auc_values_manhattan, 'manhattan')
     graph_k_AUC(k_values, mean_error_values_manhattan, 'manhattan')
-    #graph_k_AUC(k_values, mean_auc_values_euclidean, 'euclidean')
+    graph_k_AUC(k_values, mean_auc_values_euclidean, 'euclidean')
     graph_k_AUC(k_values, mean_error_values_euclidean, 'euclidean')

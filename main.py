@@ -1,14 +1,14 @@
 from sklearn.model_selection import StratifiedKFold
 import pandas as pd
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, matthews_corrcoef
+from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, matthews_corrcoef,auc,roc_curve
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
 
 # Métricas a evaluar
-metrics = ['accuracy', 'precision', 'recall', 'roc_auc', 'f1', 'mcc','error']
+metrics = ['accuracy', 'precision', 'recall', 'roc_auc', 'f1', 'mcc','error', 'auc']
 k_values = list(range(1, 16, 2))
 
 def graph_k_AUC(k_values, auc_values, distance):
@@ -24,28 +24,48 @@ def classify(dataset,verbose=False):
     X = data_1.drop('Etiqueta', axis=1).values
     y = data_1['Etiqueta'].values
     skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
-
+    results_nb = {metric: [] for metric in metrics}
+    nb_classifier = MultinomialNB(alpha=1)
+    i=0
     for train_index, test_index in skf.split(X, y):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
+        nb_classifier.fit(X_train, y_train)
+        y_pred_nb = nb_classifier.predict(X_test)
+        fpr, tpr, thresholds=roc_curve(y_test, y_pred_nb)
         
+        results_nb['accuracy'].append(accuracy_score(y_test, y_pred_nb))
+        results_nb['precision'].append(precision_score(y_test, y_pred_nb))
+        results_nb['recall'].append(recall_score(y_test, y_pred_nb))
+        results_nb['roc_auc'].append(roc_auc_score(y_test, y_pred_nb))
+        results_nb['f1'].append(f1_score(y_test, y_pred_nb))
+        results_nb['mcc'].append(matthews_corrcoef(y_test, y_pred_nb))
+        results_nb['error'].append(np.mean(y_pred_nb != y_test))
+        
+        results_nb['auc'].append(auc(fpr, tpr))
+        i=i+1
+        if verbose==True:
+            print("Fold" + str(i) + "Results for Naive Bayes:")
+            print(f"Accuracy: {results_nb['accuracy'][-1]}")
+            print(f"Precision: {results_nb['precision'][-1]}")
+            print(f"Recall: {results_nb['recall'][-1]}")
+            print(f"ROC AUC: {results_nb['roc_auc'][-1]}")
+            print(f"F1: {results_nb['f1'][-1]}")
+            print(f"MCC: {results_nb['mcc'][-1]}")
+            print(f"Error: {results_nb['error'][-1]}")
+            print(f"AUC: {results_nb['auc'][-1]}")
+            print("\n")
+            
     # Diccionarios para almacenar los resultados
     results_knn_manhattan = {metric: [] for metric in metrics}
     results_knn_euclidean = {metric: [] for metric in metrics}
-    results_nb = {metric: [] for metric in metrics}
+   
 
-    nb_classifier = MultinomialNB(alpha=1)
-    nb_classifier.fit(X_train, y_train)
-    y_pred_nb = nb_classifier.predict(X_test)
+    
+   
 
     # Calcula y almacena las métricas para Naive Bayes
-    results_nb['accuracy'].append(accuracy_score(y_test, y_pred_nb))
-    results_nb['precision'].append(precision_score(y_test, y_pred_nb))
-    results_nb['recall'].append(recall_score(y_test, y_pred_nb))
-    results_nb['roc_auc'].append(roc_auc_score(y_test, y_pred_nb))
-    results_nb['f1'].append(f1_score(y_test, y_pred_nb))
-    results_nb['mcc'].append(matthews_corrcoef(y_test, y_pred_nb))
-    results_nb['error'].append(np.mean(y_pred_nb != y_test))
+    
 
     avg_results_nb = {metric: (np.mean(results_nb[metric]), np.std(results_nb[metric])) for metric in metrics}
 
@@ -62,18 +82,22 @@ def classify(dataset,verbose=False):
         for distance in ['manhattan', 'euclidean']:
             if verbose:
                 print(f"K = {k}, Distancia = {distance}")
-
-            knn_classifier = KNeighborsClassifier(n_neighbors=k, metric=distance)
-            knn_classifier.fit(X_train, y_train)
-            y_pred_knn = knn_classifier.predict(X_test)
+            for train_index, test_index in skf.split(X, y):
+                X_train, X_test = X[train_index], X[test_index]
+                y_train, y_test = y[train_index], y[test_index]
+                knn_classifier = KNeighborsClassifier(n_neighbors=k, metric=distance)
+                knn_classifier.fit(X_train, y_train)
+                y_pred_knn = knn_classifier.predict(X_test)
+                fpr, tpr, thresholds=roc_curve(y_test, y_pred_knn)
             # Calcula y almacena las métricas para k-NN
-            results_knn = {'accuracy': accuracy_score(y_test, y_pred_knn),
-                        'precision': precision_score(y_test, y_pred_knn),
-                        'recall': recall_score(y_test, y_pred_knn),
-                        'roc_auc': roc_auc_score(y_test, y_pred_knn),
-                        'f1': f1_score(y_test, y_pred_knn),
-                        'mcc': matthews_corrcoef(y_test, y_pred_knn),
-                        'error': np.mean(y_pred_knn != y_test)}
+                results_knn = {'accuracy': accuracy_score(y_test, y_pred_knn),
+                            'precision': precision_score(y_test, y_pred_knn),
+                            'recall': recall_score(y_test, y_pred_knn),
+                            'roc_auc': roc_auc_score(y_test, y_pred_knn),
+                            'f1': f1_score(y_test, y_pred_knn),
+                            'mcc': matthews_corrcoef(y_test, y_pred_knn),
+                            'error': np.mean(y_pred_knn != y_test),
+                            'auc': auc(fpr, tpr)}
             if distance == 'manhattan':
                 for metric in metrics:
                     results_knn_manhattan[metric].append(results_knn[metric])
@@ -127,9 +151,9 @@ def classify(dataset,verbose=False):
 
 if __name__ == "__main__":
     
-    #subsets = ['subsets/subset_1_df.csv', 'subsets/subset_2_df.csv', 'subsets/subset_3_df.csv', 'subsets/subset_4_df.csv', 'subsets/subset_5_df.csv']
+    #subsets = ['subsets/subset_3_df.csv','subsets/subset_2_df.csv', 'subsets/subset_3_df.csv', 'subsets/subset_4_df.csv', 'subsets/subset_5_df.csv']
     #Test with other subsets
-    subsets=['subsets_2/subset_1_df.csv', 'subsets_2/subset_2_df.csv', 'subsets_2/subset_3_df.csv', 'subsets_2/subset_4_df.csv', 'subsets_2/subset_5_df.csv']
+    subsets=['subsets_2/subset_1_df.csv']# 'subsets_2/subset_2_df.csv', 'subsets_2/subset_3_df.csv', 'subsets_2/subset_4_df.csv', 'subsets_2/subset_5_df.csv']
     total_results_nb = {metric: [] for metric in metrics}
     total_results_knn_manhattan = {metric: [] for metric in metrics}
     total_results_knn_euclidean = {metric: [] for metric in metrics}
@@ -139,7 +163,7 @@ if __name__ == "__main__":
 
     counter = 0
     for subset in subsets:
-        results_nb, results_knn_manhattan, results_knn_euclidean, results_best_k = classify(subset, False)
+        results_nb, results_knn_manhattan, results_knn_euclidean, results_best_k = classify(subset, True)
         all_best_k.append(results_best_k)
         for metric in metrics:
             total_results_nb[metric].extend(results_nb[metric])
@@ -179,6 +203,6 @@ if __name__ == "__main__":
         print(f"Subset {i+1}: {all_best_k[i]}")
 
     graph_k_AUC(k_values, mean_auc_values_manhattan, 'manhattan')
-    graph_k_AUC(k_values, mean_error_values_manhattan, 'manhattan')
+    #graph_k_AUC(k_values, mean_error_values_manhattan, 'manhattan')
     graph_k_AUC(k_values, mean_auc_values_euclidean, 'euclidean')
-    graph_k_AUC(k_values, mean_error_values_euclidean, 'euclidean')
+    #graph_k_AUC(k_values, mean_error_values_euclidean, 'euclidean')

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 # Métricas a evaluar
-metrics = ['accuracy', 'precision', 'recall', 'roc_auc', 'f1', 'mcc']
+metrics = ['accuracy', 'precision', 'recall', 'roc_auc', 'f1', 'mcc','error']
 k_values = list(range(1, 16, 2))
 
 def graph_k_AUC(k_values, auc_values, distance):
@@ -34,7 +34,7 @@ def classify(dataset,verbose=False):
     results_knn_euclidean = {metric: [] for metric in metrics}
     results_nb = {metric: [] for metric in metrics}
 
-    nb_classifier = MultinomialNB(alpha=0.5)
+    nb_classifier = MultinomialNB(alpha=1)
     nb_classifier.fit(X_train, y_train)
     y_pred_nb = nb_classifier.predict(X_test)
 
@@ -45,6 +45,7 @@ def classify(dataset,verbose=False):
     results_nb['roc_auc'].append(roc_auc_score(y_test, y_pred_nb))
     results_nb['f1'].append(f1_score(y_test, y_pred_nb))
     results_nb['mcc'].append(matthews_corrcoef(y_test, y_pred_nb))
+    results_nb['error'].append(np.mean(y_pred_nb != y_test))
 
     avg_results_nb = {metric: (np.mean(results_nb[metric]), np.std(results_nb[metric])) for metric in metrics}
 
@@ -56,7 +57,6 @@ def classify(dataset,verbose=False):
     # from sklearn.neighbors import KNeighborsClassifier
 
     best_k = []
-
     # Puedes ajustar el parámetro k en el rango [1, 16] con pasos impares
     for k in k_values:
         for distance in ['manhattan', 'euclidean']:
@@ -72,7 +72,8 @@ def classify(dataset,verbose=False):
                         'recall': recall_score(y_test, y_pred_knn),
                         'roc_auc': roc_auc_score(y_test, y_pred_knn),
                         'f1': f1_score(y_test, y_pred_knn),
-                        'mcc': matthews_corrcoef(y_test, y_pred_knn)}
+                        'mcc': matthews_corrcoef(y_test, y_pred_knn),
+                        'error': np.mean(y_pred_knn != y_test)}
             if distance == 'manhattan':
                 for metric in metrics:
                     results_knn_manhattan[metric].append(results_knn[metric])
@@ -91,7 +92,8 @@ def classify(dataset,verbose=False):
 
         #Comparar AUC de manhattan y euclidean y obtener el mejor k
         knn_manhattan_auc = results_knn_manhattan['roc_auc']
-        knn_euclidean_auc = results_knn_manhattan['roc_auc']
+        knn_euclidean_auc = results_knn_euclidean['roc_auc']
+        
         max_value_manhattan = max(knn_manhattan_auc)
         max_index_manhattan = knn_manhattan_auc.index(max_value_manhattan)
         max_index_manhattan = max_index_manhattan * 2 + 1
@@ -144,10 +146,14 @@ if __name__ == "__main__":
 
         if counter == 0:
             mean_auc_values_manhattan = results_knn_manhattan['roc_auc']
+            mean_error_values_manhattan = results_knn_manhattan['error']
             mean_auc_values_euclidean = results_knn_euclidean['roc_auc']
+            mean_error_values_euclidean = results_knn_euclidean['error']
         else:
             mean_auc_values_manhattan = [((x + y)/2) for x, y in zip(mean_auc_values_manhattan, results_knn_manhattan['roc_auc'])]
+            mean_error_values_manhattan = [((x + y)/2) for x, y in zip(mean_error_values_manhattan, results_knn_manhattan['error'])]
             mean_auc_values_euclidean = [((x + y)/2) for x, y in zip(mean_auc_values_euclidean, results_knn_euclidean['roc_auc'])]
+            mean_error_values_euclidean = [((x + y)/2) for x, y in zip(mean_error_values_euclidean, results_knn_euclidean['error'])]
         counter += 1
 
     mean_results_nb = {metric: np.mean(total_results_nb[metric]) for metric in metrics}
@@ -170,5 +176,7 @@ if __name__ == "__main__":
     for i in range(len(all_best_k)):
         print(f"Subset {i+1}: {all_best_k[i]}")
 
-    graph_k_AUC(k_values, mean_auc_values_manhattan, 'manhattan')
-    graph_k_AUC(k_values, mean_auc_values_euclidean, 'euclidean')
+    #graph_k_AUC(k_values, mean_auc_values_manhattan, 'manhattan')
+    graph_k_AUC(k_values, mean_error_values_manhattan, 'manhattan')
+    #graph_k_AUC(k_values, mean_auc_values_euclidean, 'euclidean')
+    graph_k_AUC(k_values, mean_error_values_euclidean, 'euclidean')

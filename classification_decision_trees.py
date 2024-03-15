@@ -97,5 +97,5 @@ _ = tree.plot_tree(classifiers['CART (Gini)'],
                    class_names=['0', '1'],
                    filled=True)
 #save the tree as a png image with the name of the dataset and the classifier
-plt.savefig('tree '+ 'CART '+ 'subset 1'   +'.png')
+plt.savefig('trees_output/tree '+ 'CART '+ 'subset 1'   +'.png')
 #plt.show()

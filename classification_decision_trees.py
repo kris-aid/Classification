@@ -5,6 +5,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+# possibles libraries for the trees implementation
+# https://github.com/RaczeQ/scikit-learn-C4.5-tree-classifier
+# https://github.com/serengil/chefboost
+# https://github.com/tensorflow/decision-forests
+# Articles to build the ID3 tree from scratch
+# https://medium.com/geekculture/step-by-step-decision-tree-id3-algorithm-from-scratch-in-python-no-fancy-library-4822bbfdd88f
+# https://www.geeksforgeeks.org/sklearn-iterative-dichotomiser-3-id3-algorithms/
+# https://github.com/milaan9/Python_Decision_Tree_and_Random_Forest/blob/main/001_Decision_Tree_PlayGolf_ID3.ipynb
+
 
 dataset = 'subsets/subset_1_df.csv'
 data_1 = pd.read_csv(dataset)

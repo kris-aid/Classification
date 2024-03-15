@@ -29,14 +29,8 @@ metrics = {
 
 # Realizar Stratified 10-fold Cross-Validation y clasificación para cada árbol
 results = {}
-plt.figure(figsize=(10, 6))
-
-
 
 for classifier_name, classifier in classifiers.items():
-    mean_tpr = 0.0
-    mean_fpr = np.linspace(0, 1, 100)
-    
     for metric_name in metrics.keys():  
         results[(classifier_name, metric_name)] = []
 
@@ -50,10 +44,7 @@ for classifier_name, classifier in classifiers.items():
 
         for metric_name, metric_func in metrics.items():
             results[(classifier_name, metric_name)].append(metric_func(y_test, y_pred))
-            
-        fpr, tpr, thresholds = roc_curve(y_test, probas_[:, 1])
-        mean_tpr += np.interp(mean_fpr, fpr, tpr)
-        mean_tpr[0] = 0.0
+
 
 # Calcular promedio y desviación estándar para cada métrica
 averages = {}
@@ -107,4 +98,4 @@ _ = tree.plot_tree(classifiers['CART (Gini)'],
                    filled=True)
 #save the tree as a png image with the name of the dataset and the classifier
 plt.savefig('tree '+ 'CART '+ 'subset 1'   +'.png')
-plt.show()
+#plt.show()

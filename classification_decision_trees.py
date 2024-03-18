@@ -4,6 +4,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, r
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from chefboost import Chefboost as cb
 
 # possibles libraries for the trees implementation
 # https://github.com/RaczeQ/scikit-learn-C4.5-tree-classifier
@@ -16,11 +17,36 @@ import pandas as pd
 
 
 dataset = 'subsets/subset_1_df.csv'
-data_1 = pd.read_csv(dataset)
-X = data_1.drop('Etiqueta', axis=1).values
-x_names = data_1.drop('Etiqueta', axis=1).columns
-y = data_1['Etiqueta'].values
-y_names = data_1['Etiqueta'].unique()
+data = pd.read_csv(dataset)
+X = data.drop('Etiqueta', axis=1).values
+x_names = data.drop('Etiqueta', axis=1).columns
+y = data['Etiqueta'].values
+y_names = data['Etiqueta'].unique()
+
+# This part isnt working
+
+data_modified = data.copy()
+data_modified = data_modified.rename(columns={'Etiqueta': 'Decision'})
+data_modified['Decision'] = data_modified['Decision'].apply(lambda x: 'Yes' if x == 1 else 'No')
+#The decision colum has to be of type string, so we change the 1 and 0 to Yes and No
+data_modified['Decision']=data_modified['Decision'].astype(str)
+
+#change the etiqueta name to Decision
+
+
+config_id3 = {'algorithm': 'ID3'}
+config_cart = {'algorithm': 'CART'}
+
+Tree_id3 = cb.fit(data_modified, config_id3,target_label='Decision')
+# Tree_c45 = cb.fit(data, config_c45)
+# Tree_cart = cb.fit(data, config_cart)
+
+
+results= cb.evaluate(Tree_id3, data)
+results.get('Accuracy')
+
+# Doesnt work
+
 # Definir los clasificadores de árbol de decisión (scikit-learn's DecisionTreeClassifier)
 classifiers = {
     'CART (Gini)': DecisionTreeClassifier(criterion='gini'),
@@ -73,7 +99,7 @@ for classifier_name, classifier in classifiers.items():
     cm = confusion_matrix(y, y_pred)
     print(f"Matriz de confusión para {classifier_name}:\n{cm}")
 
-from sklearn import tree
+
 
 # Mostrar plot de AUC para cada clasificador
 plt.figure(figsize=(10, 6))
@@ -99,7 +125,7 @@ plt.ylabel('Precision')
 plt.title('Precision vs Recall para cada Clasificador')
 plt.legend()
 plt.show()
-
+from sklearn import tree
 plt.figure(figsize=(40, 30),dpi=200)
 _ = tree.plot_tree(classifiers['CART (Gini)'], 
                    feature_names=x_names,  

@@ -91,6 +91,8 @@ def generate_C45_model(X,y,max_depth=0):
         
         # Fit the model
         clf.fit(X_train, y_train)
+        conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
+        #print(accuracy, precision, recall, f1, auc, mcc)
 
     return clf     
 
@@ -109,6 +111,8 @@ def generate_model(criterion,X,y,max_depth):
             
             # Fit the model
             clf.fit(X_train, y_train)
+            conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
+            #print(accuracy, precision, recall, f1, auc, mcc)
 
         return clf 
     clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,random_state=42)

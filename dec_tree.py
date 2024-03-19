@@ -64,7 +64,7 @@ class DecisionTreeGainRatio(DecisionTreeClassifier):
 
 def generate_models(X,y):
     models=[]
-    criteria_list = ['entropy', 'gini','gain ratio']
+    criteria_list = ['entropy', 'gini']
     for criterion in criteria_list:
         models_row=[]
         for max_depth in range(2, 11):
@@ -73,10 +73,28 @@ def generate_models(X,y):
             if clf.get_depth()<max_depth:
                 break
         models.append(models_row)
+    clf=generate_C45_model(X,y,max_depth)
+    models_row=[]
+    models_row.append(clf)  
+    models.append(models_row)
     return models
 
 
-    
+def generate_C45_model(X,y,max_depth=0):
+    clf = C45()
+    skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+
+    # Iterate through each fold
+    for train_index, test_index in skf.split(X, y):
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        
+        # Fit the model
+        clf.fit(X_train, y_train)
+        conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
+        #print(accuracy, precision, recall, f1, auc, mcc)
+
+    return clf     
 
 
 def generate_model(criterion,X,y,max_depth):
@@ -93,6 +111,8 @@ def generate_model(criterion,X,y,max_depth):
             
             # Fit the model
             clf.fit(X_train, y_train)
+            conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
+            #print(accuracy, precision, recall, f1, auc, mcc)
 
         return clf 
     clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,random_state=42)

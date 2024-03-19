@@ -23,7 +23,7 @@ def split_csv(input_file):
         # Save file with header
         with open(os.path.join(output_folder, 'subset.names'), 'w', newline='') as with_header_file:
             with_header_file.writelines("0.0, 1.0\n")
-            with_header_file.writelines(modified_header[1:-1])
+            with_header_file.writelines(modified_header[:-1])
 
 
         # Save file without header

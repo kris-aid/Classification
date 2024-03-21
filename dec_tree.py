@@ -6,6 +6,7 @@ from sklearn.metrics import roc_auc_score, matthews_corrcoef
 import numpy as np
 from C45 import C45Classifier as C45
 import pandas as pd
+import statistics
 class DecisionTreeGainRatio(DecisionTreeClassifier):
     def __init__(self, criterion="entropy", max_depth=None,
                  random_state=None, max_leaf_nodes=None):
@@ -123,10 +124,18 @@ def generate_model(criterion,X,y,max_depth):
 
         return clf
     else:
-        metrics={} 
         clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,random_state=42)
 
         skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+
+        metrics = {
+            'accuracy': [],
+            'precision': [],
+            'recall': [],
+            'roc_auc': [],
+            'f1': [],
+            'mcc': []
+        }
 
         # Iterate through each fold
         for train_index, test_index in skf.split(X, y):
@@ -136,11 +145,25 @@ def generate_model(criterion,X,y,max_depth):
             # Fit the model
             clf.fit(X_train, y_train)
             conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
-            metrics
+            metrics['accuracy'].append(accuracy)
+            metrics['precision'].append(precision)
+            metrics['recall'].append(recall)
+            metrics['roc_auc'].append(auc)
+            metrics['f1'].append(f1)
+            metrics['mcc'].append(mcc)
+            #print(accuracy, precision, recall, f1, auc, mcc)
+            results = {}
             
-            print(accuracy, precision, recall, f1, auc, mcc)
+        for metric, values in metrics.items():
+            results[metric] = {
+                'std_dev': statistics.stdev(values),
+                'median': statistics.median(values)
+            }
 
-        return clf 
+        for metric, values in results.items():
+            print(f"Metric: {metric}")
+            print(f"Standard Deviation: {values['std_dev']}")
+            print(f"Median: {values['median']}")
 
 def calculate_metrics(X,y,model):
     # Make predictions on the training set

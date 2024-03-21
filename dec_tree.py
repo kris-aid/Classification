@@ -1,10 +1,11 @@
 # Import necessary libraries
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix,roc_curve, auc
 from sklearn.metrics import roc_auc_score, matthews_corrcoef
 import numpy as np
-
+from C45 import C45Classifier as C45
+import pandas as pd
 class DecisionTreeGainRatio(DecisionTreeClassifier):
     def __init__(self, criterion="entropy", max_depth=None,
                  random_state=None, max_leaf_nodes=None):
@@ -83,9 +84,15 @@ def generate_models(X,y):
 def generate_C45_model(X,y,max_depth=0):
     clf = C45()
     skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+    X_copy = X.copy()
+    for column in X_copy.columns:
+        X_copy[column] = pd.cut(X_copy[column], bins=4)
 
+    #transform interval to string
+    for column in X_copy.columns:
+        X_copy[column] = X[column].astype(str)
     # Iterate through each fold
-    for train_index, test_index in skf.split(X, y):
+    for train_index, test_index in skf.split(X_copy, y):
         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         
@@ -112,22 +119,28 @@ def generate_model(criterion,X,y,max_depth):
             # Fit the model
             clf.fit(X_train, y_train)
             conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
-            #print(accuracy, precision, recall, f1, auc, mcc)
+            print(accuracy, precision, recall, f1, auc, mcc)
+
+        return clf
+    else:
+        metrics={} 
+        clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,random_state=42)
+
+        skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+
+        # Iterate through each fold
+        for train_index, test_index in skf.split(X, y):
+            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+            
+            # Fit the model
+            clf.fit(X_train, y_train)
+            conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
+            metrics
+            
+            print(accuracy, precision, recall, f1, auc, mcc)
 
         return clf 
-    clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,random_state=42)
-
-    skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
-
-    # Iterate through each fold
-    for train_index, test_index in skf.split(X, y):
-        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-        
-        # Fit the model
-        clf.fit(X_train, y_train)
-
-    return clf 
 
 def calculate_metrics(X,y,model):
     # Make predictions on the training set
@@ -147,7 +160,8 @@ def calculate_metrics(X,y,model):
     precision = TP / (TP + FP) if TP + FP != 0 else 0
     recall = TP / (TP + FN) if TP + FN != 0 else 0
     f1 = 2 * (precision * recall) / (precision + recall) if precision + recall != 0 else 0
-    auc = roc_auc_score(y, y_pred)
+    fpr, tpr, _ = roc_curve(y, y_pred)
+    auc_1 = auc(fpr, tpr)
     mcc = matthews_corrcoef(y, y_pred)
     
-    return conf_matrix, accuracy, precision, recall, f1, auc, mcc
+    return conf_matrix, accuracy, precision, recall, f1, auc_1, mcc

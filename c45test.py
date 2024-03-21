@@ -38,21 +38,28 @@ def iter_once(tr_size=0.5, seed=1, min_gain=0, min_num=2, max_depth=100, verbose
 
     # initialize decision tree, and pull entries in the TRAINING_SET into root node.
     tree = DecisionTree(TRAINING_SET)
-
-    with open(DATA_SET, "r", encoding="utf-8") as file:
-            f_csv = csv.reader(file)
-            headers = next(f_csv)
-            identifiers = [create_valid_identifier(header) for header in headers]
-            i=0
-            for row in f_csv:
-                    if i < len(identifiers):
-                        m = tree.generator.contineous_template(identifiers[i], *row)
-                    else:
-                        # Handle case where identifiers are exhausted
-                        break
-                    i += 1
     # we need all values's ordered set of each feature, to generate metric functions.
-
+    
+    # We will create a list of lists
+    column_values = {}
+    #change the headers with the create_valid_identifier function
+    data_set.columns = [create_valid_identifier(col) for col in data_set.columns]
+    
+    for col_name in data_set.columns:
+        #print(col_name) 
+        column_values[col_name] = []
+    #colect all values of each feature.
+    for index, row in data_set.iterrows():
+        for col_name in data_set.columns:
+            #print(col_name)
+            column_values[col_name].append(row[col_name])  
+            
+    # Register splitting metric functions for each feature
+    # Use template for continuous attributes in the MetricGenerator class
+    metrics = {}
+    for col_name, values in column_values.items():
+        metrics[col_name] = tree.generator.contineous_template(col_name, *values)
+     
     # min gain ratio should every splitting get,
     # min number of items supporting splitting,
     # max tree depth, considering root node.
@@ -70,7 +77,7 @@ def cross_validation():
     # cross validation
     tr_res = []
     te_res = []
-    for i in range(500):
+    for i in range(5):
         now = int(time.time()*100) % 1000000  # random seed
         err_tr, err_te = iter_once(
             tr_size=0.5, seed=now, min_gain=0.2, min_num=4, max_depth=6, verbose=True)
@@ -93,7 +100,7 @@ def cross_validation():
 def para_effect_min_gain():
     tr_res = []
     te_res = []
-    for i in range(100):
+    for i in range(5):
         min_gain = i*0.05
         err_tr, err_te = iter_once(
             tr_size=0.7, seed=1, min_gain=min_gain, verbose=True)
@@ -114,7 +121,7 @@ def para_effect_min_gain():
 def para_effect_min_num():
     tr_res = []
     te_res = []
-    for i in range(2, 50):
+    for i in range(2, 4):
         min_num = i
         err_tr, err_te = iter_once(
             tr_size=0.7, seed=1, min_num=min_num, verbose=True)
@@ -135,7 +142,7 @@ def para_effect_min_num():
 def para_effect_max_depth():
     tr_res = []
     te_res = []
-    for i in range(2, 20):
+    for i in range(2, 4):
         max_depth = i
         err_tr, err_te = iter_once(
             tr_size=0.7, seed=1, max_depth=max_depth, verbose=True)

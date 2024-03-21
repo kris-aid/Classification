@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.metrics import auc, confusion_matrix, accuracy_score, precision_recall_curve, precision_score, recall_score, roc_auc_score, f1_score, matthews_corrcoef,roc_curve
 from matplotlib import pyplot as plt
-
+import graphviz
 def generate_graphs(y_test, y_pred, criterion, show = False, dataset_name = ''):
     fpr, tpr, thresholds = roc_curve(y_test, y_pred)
     roc_auc = auc(fpr, tpr)
@@ -43,16 +43,22 @@ def graph_precision_recall_curve(precision, recall,criterion, show = False, data
     
 def graph_tree(classifier, x_names,y_names, criterion,subset_name, show = False, dataset_name = ''):
     os.makedirs(f"trees_output/{dataset_name}", exist_ok=True)
-    fig = plt.figure(figsize=(40, 30), dpi=200)
-    _ = plot_tree(classifier, 
-                   feature_names=x_names,  
-                   class_names=y_names,
-                   filled=True)
-    #save the tree as a png image with the name of the dataset and the classifier
-    plt.savefig(f'trees_output/{dataset_name}/{criterion}_k-{subset_name}_tree.png')
-    if show:
-        plt.show()
-    plt.close(fig)
+    if criterion== 'gain ratio':
+        filename=f"trees_output/{str(dataset_name)}/{str(criterion)}_k-{str(subset_name)}_tree"
+        print(filename)
+        dot_data=classifier.generate_tree_diagram(graphviz, filename=filename)
+        graph = graphviz.Source(dot_data, format="png")
+    else:
+        fig = plt.figure(figsize=(40, 30), dpi=200)
+        _ = plot_tree(classifier, 
+                    feature_names=x_names,  
+                    class_names=y_names,
+                    filled=True)
+        #save the tree as a png image with the name of the dataset and the classifier
+        plt.savefig(f'trees_output/{dataset_name}/{criterion}_k-{subset_name}_tree.png')
+        if show:
+            plt.show()
+        plt.close(fig)
 
     
     

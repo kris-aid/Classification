@@ -46,7 +46,7 @@ for df in dataframes:
             i=i+1
             clf = model
             conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
-            print(accuracy, precision, recall, f1, auc, mcc)
+            
             # Check if the current model has a higher AUC
             if auc > best_auc:
                 best_auc = auc
@@ -55,6 +55,7 @@ for df in dataframes:
                 best_model_k = i
         print("\nConfusion Matrix - Best Model "+str(best_model_k)+" AUC: "+str(best_auc)) 
         print(best_model_conf_matrix)
+    
         graph_tree(best_model, X.columns, y_mapped, citeria, str(best_model_k), show=False, dataset_name=filename)
 
         best_model.fit(X_train, y_train)

@@ -46,7 +46,7 @@ def graph_tree(classifier, x_names,y_names, criterion,subset_name, show = False,
     if criterion== 'gain ratio':
         filename=f"trees_output/{str(dataset_name)}/{str(criterion)}_k-{str(subset_name)}_tree"
         print(filename)
-        dot_data=classifier.generate_tree_diagram(graphviz, filename=filename)
+        dot_data=classifier.generate_tree_diagram(graphviz, filename=str(filename))
         graph = graphviz.Source(dot_data, format="png")
     else:
         fig = plt.figure(figsize=(40, 30), dpi=200)

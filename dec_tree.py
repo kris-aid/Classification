@@ -85,6 +85,14 @@ def generate_models(X,y):
 def generate_C45_model(X,y,max_depth=0):
     clf = C45()
     skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+    metrics = {
+        'accuracy': [],
+        'precision': [],
+        'recall': [],
+        'roc_auc': [],
+        'f1': [],
+        'mcc': []
+    }
     X_copy = X.copy()
     for column in X_copy.columns:
         X_copy[column] = pd.cut(X_copy[column], bins=4)
@@ -101,69 +109,74 @@ def generate_C45_model(X,y,max_depth=0):
         clf.fit(X_train, y_train)
         conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
         #print(accuracy, precision, recall, f1, auc, mcc)
+        metrics['accuracy'].append(accuracy)
+        metrics['precision'].append(precision)
+        metrics['recall'].append(recall)
+        metrics['roc_auc'].append(auc)
+        metrics['f1'].append(f1)
+        metrics['mcc'].append(mcc)
+        #print(accuracy, precision, recall, f1, auc, mcc)
+        results = {}
+    for metric, values in metrics.items():
+        results[metric] = {
+            'std_dev': statistics.stdev(values),
+            'median': statistics.median(values)
+        }
+    print(f"Results for criterion: C45")
+    for metric, values in results.items():
+        print(f"Metric: {metric}")
+        print(f"Standard Deviation: {values['std_dev']}")
+        print(f"Median: {values['median']}")
 
     return clf     
 
 
 def generate_model(criterion,X,y,max_depth):
     # Create the Decision Tree model
-    if criterion=='gain ratio':
-        clf = DecisionTreeGainRatio(criterion='entropy', max_depth=max_depth,random_state=42)
 
-        skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+    clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,random_state=42)
 
-        # Iterate through each fold
-        for train_index, test_index in skf.split(X, y):
-            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-            
-            # Fit the model
-            clf.fit(X_train, y_train)
-            conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
-            print(accuracy, precision, recall, f1, auc, mcc)
+    skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
 
-        return clf
-    else:
-        clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,random_state=42)
+    metrics = {
+        'accuracy': [],
+        'precision': [],
+        'recall': [],
+        'roc_auc': [],
+        'f1': [],
+        'mcc': []
+    }
 
-        skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
-
-        metrics = {
-            'accuracy': [],
-            'precision': [],
-            'recall': [],
-            'roc_auc': [],
-            'f1': [],
-            'mcc': []
+    # Iterate through each fold
+    for train_index, test_index in skf.split(X, y):
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        
+        # Fit the model
+        clf.fit(X_train, y_train)
+        conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
+        metrics['accuracy'].append(accuracy)
+        metrics['precision'].append(precision)
+        metrics['recall'].append(recall)
+        metrics['roc_auc'].append(auc)
+        metrics['f1'].append(f1)
+        metrics['mcc'].append(mcc)
+        #print(accuracy, precision, recall, f1, auc, mcc)
+        results = {}
+        
+    for metric, values in metrics.items():
+        results[metric] = {
+            'std_dev': statistics.stdev(values),
+            'median': statistics.median(values)
         }
-
-        # Iterate through each fold
-        for train_index, test_index in skf.split(X, y):
-            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-            
-            # Fit the model
-            clf.fit(X_train, y_train)
-            conf_matrix, accuracy, precision, recall, f1, auc, mcc=calculate_metrics(X_test,y_test,clf)
-            metrics['accuracy'].append(accuracy)
-            metrics['precision'].append(precision)
-            metrics['recall'].append(recall)
-            metrics['roc_auc'].append(auc)
-            metrics['f1'].append(f1)
-            metrics['mcc'].append(mcc)
-            #print(accuracy, precision, recall, f1, auc, mcc)
-            results = {}
-            
-        for metric, values in metrics.items():
-            results[metric] = {
-                'std_dev': statistics.stdev(values),
-                'median': statistics.median(values)
-            }
-
-        for metric, values in results.items():
-            print(f"Metric: {metric}")
-            print(f"Standard Deviation: {values['std_dev']}")
-            print(f"Median: {values['median']}")
+    print(f"Results for criterion: {criterion}, max_depth: {max_depth}")
+    for metric, values in results.items():
+        print(f"Metric: {metric}")
+        print(f"Standard Deviation: {values['std_dev']}")
+        print(f"Median: {values['median']}")
+        
+    return clf
+        
 
 def calculate_metrics(X,y,model):
     # Make predictions on the training set

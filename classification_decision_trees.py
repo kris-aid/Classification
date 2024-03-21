@@ -60,6 +60,7 @@ for df in dataframes:
 
         best_model.fit(X_train, y_train)
         y_pred = best_model.predict(X_test)
-        y_names= ["0", "1"]
+
         generate_graphs(y_test, y_pred, citeria, show=False, dataset_name=filename)
+        graph_tree(best_model, X.columns, y_mapped, citeria, str(best_model_k), show=False, dataset_name=filename)
     

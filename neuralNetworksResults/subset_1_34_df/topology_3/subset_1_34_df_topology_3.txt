@@ -1,4 +1,4 @@
-Best Parameters: {'activation': 'logistic', 'hidden_layer_sizes': (100,), 'learning_rate_init': 0.1, 'max_iter': 181}
+Best Parameters: {'activation': 'identity', 'hidden_layer_sizes': (100,), 'learning_rate_init': 0.1, 'max_iter': 101}
 Confusion Matrix:
 [[ 13   3]
  [  5 115]]

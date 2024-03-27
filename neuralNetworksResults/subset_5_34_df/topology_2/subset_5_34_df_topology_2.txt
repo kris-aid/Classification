@@ -1,0 +1,10 @@
+Best Parameters: {'activation': 'logistic', 'hidden_layer_sizes': (50,), 'learning_rate_init': 0.1, 'max_iter': 81}
+Confusion Matrix:
+[[ 12   4]
+ [  2 118]]
+Accuracy: 0.9558823529411765
+Precision: 0.9672131147540983
+Recall: 0.9833333333333333
+F1 Score: 0.9752066115702478
+AUC: 0.8666666666666667
+MCC: 0.7775138022726247

@@ -1,0 +1,10 @@
+Best Parameters: {'activation': 'tanh', 'hidden_layer_sizes': (20,), 'learning_rate_init': 0.1, 'max_iter': 101}
+Confusion Matrix:
+[[  9   7]
+ [  1 119]]
+Accuracy: 0.9411764705882353
+Precision: 0.9444444444444444
+Recall: 0.9916666666666667
+F1 Score: 0.967479674796748
+AUC: 0.7770833333333333
+MCC: 0.6840781848319407

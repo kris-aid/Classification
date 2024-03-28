@@ -1,10 +1,10 @@
-Best Parameters: {'activation': 'identity', 'hidden_layer_sizes': (100,), 'learning_rate_init': 0.1, 'max_iter': 101}
+Best Parameters: {'activation': 'identity', 'hidden_layer_sizes': (200,), 'learning_rate_init': 0.1, 'max_iter': 41}
 Confusion Matrix:
-[[ 13   3]
- [  5 115]]
+[[ 11   5]
+ [  3 117]]
 Accuracy: 0.9411764705882353
-Precision: 0.9745762711864406
-Recall: 0.9583333333333334
-F1 Score: 0.9663865546218487
-AUC: 0.8854166666666667
-MCC: 0.7328816448348563
+Precision: 0.9590163934426229
+Recall: 0.975
+F1 Score: 0.9669421487603306
+AUC: 0.83125
+MCC: 0.7024130372803825

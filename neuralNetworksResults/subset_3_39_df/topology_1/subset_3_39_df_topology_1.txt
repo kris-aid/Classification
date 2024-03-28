@@ -1,10 +1,10 @@
-Best Parameters: {'activation': 'relu', 'hidden_layer_sizes': (100,), 'learning_rate_init': 0.5, 'max_iter': 21}
+Best Parameters: {'activation': 'logistic', 'hidden_layer_sizes': (50,), 'learning_rate_init': 0.1, 'max_iter': 41}
 Confusion Matrix:
-[[  9   7]
- [  2 118]]
-Accuracy: 0.9338235294117647
-Precision: 0.944
-Recall: 0.9833333333333333
-F1 Score: 0.9632653061224489
-AUC: 0.7729166666666667
-MCC: 0.6449994127317036
+[[ 13   3]
+ [  4 116]]
+Accuracy: 0.9485294117647058
+Precision: 0.9747899159663865
+Recall: 0.9666666666666667
+F1 Score: 0.9707112970711297
+AUC: 0.8895833333333334
+MCC: 0.7590721152765897

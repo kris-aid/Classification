@@ -1,5 +1,7 @@
 import sys
 from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
@@ -8,6 +10,7 @@ from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.neural_network import MLPClassifier
 import warnings
 from sklearn.metrics import confusion_matrix,roc_curve, auc,precision_recall_curve,matthews_corrcoef
+
 
 #Copiado de dec_tree.py - plots.py , no lo importe porque me daba conflicto con unas dependencias
 def calculate_metrics(X,y,model):
@@ -34,13 +37,29 @@ def calculate_metrics(X,y,model):
     
     return conf_matrix, accuracy, precision, recall, f1, auc_1, mcc
 
-def generate_graphs(y_test, y_pred, criterion, show = False, dataset_name = '', topology = ''):
+def graph_loss_vs_epoch(model,criterion, show = False, dataset_name = '', topology = ''):
+    plt.plot(model.loss_curve_)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss vs. Epoch')
+    # Check if the directory exists, if not, create it
+    directory = "neuralNetworksResults/" + dataset_name.split('.')[0] + '/topology_' + topology
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    plt.savefig(os.path.join(directory, f'{criterion}_Loss_vs_Epoch.png'))
+    if show:
+        plt.show()
+    plt.close()
+
+def generate_graphs(model,y_test, y_pred, criterion, show = False, dataset_name = '', topology = ''):
     fpr, tpr, thresholds = roc_curve(y_test, y_pred)
     roc_auc = auc(fpr, tpr)
     graph_roc_curve(fpr, tpr,roc_auc,criterion= criterion, show = show  , dataset_name = dataset_name, topology = topology)
     
     precision, recall, _ = precision_recall_curve(y_test, y_pred)
     graph_precision_recall_curve(precision, recall,criterion, show = show  , dataset_name = dataset_name, topology = topology)
+    #graph_loss_vs_epoch(model, show = show,criterion=criterion, dataset_name = dataset_name, topology = topology)
+    
 
 def graph_precision_recall_curve(precision, recall,criterion, show = False, dataset_name = '', topology = ''):
     plt.plot(recall, precision, marker='.', label='Precision-Recall curve', color = 'orange')
@@ -154,6 +173,8 @@ for df in dataframes:
         y_pred = best_ann_classifier.predict(X_test)
 
         conf_matrix, accuracy, precision, recall, f1, auc_1, mcc = calculate_metrics(X_test, y_test, best_ann_classifier)
+        graph_loss_vs_epoch(best_ann_classifier,'nA', show = False, dataset_name = filename, topology = str(i+1))
+        
         print("Confusion Matrix:")
         print(conf_matrix)
         print("Accuracy:", accuracy)
@@ -183,7 +204,7 @@ for df in dataframes:
             file.write("MCC: {}\n".format(mcc))
 
         # Plots
-        generate_graphs(y_test, y_pred, 'nA', show = False, dataset_name = filename, topology = str(i+1))
+        generate_graphs(best_ann_classifier,y_test, y_pred, 'nA', show = False, dataset_name = filename, topology = str(i+1))
     
     
     
